@@ -1,0 +1,46 @@
+#import <Parse/Parse.h>
+@interface ViewController (){
+    IBOutlet UITextField * signInUserNameTextField;
+    IBOutlet UITextField * signInPasswordTextField;
+    IBOutlet UITextField * signUpUserNameTextField;
+    IBOutlet UITextField * signUpPasswordTextField;
+    UIActivityIndicatorView *activityIndicatorView;
+}
+@end
+
+@implementation ViewController
+- (void)viewDidAppear:(BOOL)animated {
+    if ([PFUser currentUser]) {
+        [self goToMainPage];
+    }
+}
+
+- (IBAction)signUp:(id)sender {
+    PFUser *user = [PFUser user];
+    user.username = signUpUserNameTextField.text;
+    user.password = signUpPasswordTextField.text;
+    [activityIndicatorView startAnimating];
+    [user signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+        [self->activityIndicatorView stopAnimating];
+        if (!error) {
+            [self goToMainPage];
+        } else {
+            [self displayMessageToUser:error.localizedDescription];
+        }
+    }];
+}
+
+- (IBAction)signIn:(id)sender {
+    [activityIndicatorView startAnimating];
+    [PFUser logInWithUsernameInBackground:signInUserNameTextField.text password:signInPasswordTextField.text
+                                    block:^(PFUser *user, NSError *error) {
+                                        [self->activityIndicatorView stopAnimating];
+                                        if (user) {
+                                            [self goToMainPage];
+                                        } else {
+                                            [self displayMessageToUser:error.localizedDescription];
+                                        }
+                                    }];
+}
+
+@end
